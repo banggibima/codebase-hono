@@ -1,5 +1,4 @@
 import { v4 as uuid } from "uuid";
-import { UserService } from "../../domain/service";
 import {
   CreateRequestDTO,
   CreateResponseDTO,
@@ -8,6 +7,7 @@ import {
   UpdateRequestDTO,
   UpdateResponseDTO,
 } from "./dto";
+import UserService from "../../domain/service";
 import argon2 from "argon2";
 
 export class UserCommandUseCase {
@@ -81,3 +81,5 @@ export class UserCommandUseCase {
     return response;
   }
 }
+
+export default UserCommandUseCase;
