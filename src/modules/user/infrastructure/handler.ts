@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { UserCommandUseCase } from "../application/command/usecase";
-import { UserQueryUseCase } from "../application/query/usecase";
-import { UserService } from "../domain/service";
-import { UserPostgresRepositoryImpl } from "./repository/postgres";
+import UserPostgresRepositoryImpl from "./repository/postgres";
+import UserService from "../domain/service";
+import UserCommandUseCase from "../application/command/usecase";
+import UserQueryUseCase from "../application/query/usecase";
 import wrapper from "../../../core/utils/wrapper";
 
-const postgresUserRepository = new UserPostgresRepositoryImpl();
-const userService = new UserService(postgresUserRepository);
+const userPostgresRepository = new UserPostgresRepositoryImpl();
+const userService = new UserService(userPostgresRepository);
 const userCommandUseCase = new UserCommandUseCase(userService);
 const userQueryUseCase = new UserQueryUseCase(userService);
 
@@ -60,6 +60,25 @@ user
     async (c) => {
       const id = c.req.param("id");
       const user = await userQueryUseCase.findById(id);
+      if (user === null) {
+        const error = wrapper.error(404, "user not found");
+        return c.json(error, 404);
+      }
+      const success = wrapper.detail(200, user);
+      return c.json(success, 200);
+    }
+  )
+  .get(
+    "/email/:email",
+    validator("param", (value, c) => {
+      if (!value.email) {
+        const error = wrapper.error(400, "email is required");
+        return c.json(error, 400);
+      }
+    }),
+    async (c) => {
+      const email = c.req.param("email");
+      const user = await userQueryUseCase.findByEmail(email);
       if (user === null) {
         const error = wrapper.error(404, "user not found");
         return c.json(error, 404);
